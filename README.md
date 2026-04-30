@@ -75,6 +75,18 @@ Suggested starter subscriptions:
 Use `scripts/evaluate_fusion.py` with JSON arrays for `ground_truth`, `camera_only`,
 `lidar_only`, and `fused` to compare RMSE.
 
+Example:
+
+```bash
+python3 scripts/evaluate_fusion.py --input scripts/sample_eval_input.json --output outputs/fusion_metrics.json
+```
+
+The report includes:
+
+- overall RMSE for camera, LiDAR, and fused
+- per-axis RMSE (`x`, `y`, `z`)
+- fused improvement percentage vs camera-only and lidar-only baselines
+
 ## Notes
 
 This implementation is an extensible scaffold with working message contracts,
