@@ -19,7 +19,7 @@ multi-object tracking, and ADAS warning logic.
 - `ros2_ws/src/lane_detection_py`: classical lane detection node
 - `ros2_ws/src/perception_lidar_cpp`: LiDAR perception node
 - `ros2_ws/src/fusion_tracker_cpp`: association + EKF tracking core
-- `ros2_ws/src/adas_app_cpp`: FCW and warning node
+- `ros2_ws/src/adas_app_cpp`: FCW + lane-departure warnings from fused tracks and lane JSON
 - `ros2_ws/src/mosaic_bringup`: launch files and RViz config
 - `scripts/evaluate_fusion.py`: RMSE comparison utility
 
@@ -36,10 +36,12 @@ Inside container:
 ```bash
 source /opt/ros/humble/setup.bash
 cd /workspace/ros2_ws
-colcon build
+colcon build --merge-install
 source install/setup.bash
 ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/data/kitti sequence:=0
 ```
+
+Always use `--merge-install` for this workspace so Python and C++ packages share one `install/` layout.
 
 ### Docker Desktop / Fast DDS shared memory noise
 
@@ -81,7 +83,11 @@ Suggested starter subscriptions:
 
 - `/mosaic/camera/image_raw`
 - `/mosaic/lidar/points`
+- `/mosaic/detections/camera`
+- `/mosaic/detections/lidar`
 - `/mosaic/tracks`
+- `/mosaic/lanes/state` (raw JSON string)
+- `/mosaic/adas/warnings`
 
 ## Metrics Workflow
 

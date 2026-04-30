@@ -22,10 +22,10 @@ jobs:
         run: |
           source /opt/ros/humble/setup.bash
           cd ros2_ws
-          colcon build --event-handlers console_direct+
+          colcon build --merge-install --event-handlers console_direct+
       - name: Test
         run: |
           source /opt/ros/humble/setup.bash
           cd ros2_ws
-          colcon test --event-handlers console_direct+
+          colcon test --merge-install --event-handlers console_direct+
           colcon test-result --verbose
