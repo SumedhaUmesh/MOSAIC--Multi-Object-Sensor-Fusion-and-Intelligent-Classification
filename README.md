@@ -37,8 +37,38 @@ source /opt/ros/humble/setup.bash
 cd /workspace/ros2_ws
 colcon build
 source install/setup.bash
-ros2 launch mosaic_bringup mosaic_pipeline.launch.py
+ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/data/kitti sequence:=0
 ```
+
+## Visualization (Foxglove Studio)
+
+Foxglove gives you a real desktop UI for images, point clouds, and plots without relying on RViz inside Docker.
+
+1. Install **Foxglove Studio** on macOS.
+2. Rebuild the dev container so `ros-humble-foxglove-bridge` is present:
+
+```bash
+cd docker
+docker compose up --build -d
+```
+
+3. Run your pipeline in the container (same as Quick Start).
+4. Start the bridge (from your Mac host, this runs detached in the container):
+
+```bash
+cd docker
+docker compose exec -d mosaic-dev bash -lc "chmod +x /workspace/scripts/run_foxglove_bridge.sh && /workspace/scripts/run_foxglove_bridge.sh"
+```
+
+5. In Foxglove Studio, create a **Foxglove WebSocket** connection to:
+
+`ws://127.0.0.1:8765`
+
+Suggested starter subscriptions:
+
+- `/mosaic/camera/image_raw`
+- `/mosaic/lidar/points`
+- `/mosaic/tracks`
 
 ## Metrics Workflow
 

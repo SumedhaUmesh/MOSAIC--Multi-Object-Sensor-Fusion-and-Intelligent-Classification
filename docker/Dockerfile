@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     python3-colcon-common-extensions \
     ros-humble-rviz2 \
+    ros-humble-foxglove-bridge \
     ros-humble-pcl-ros \
     ros-humble-cv-bridge \
     ros-humble-image-transport \

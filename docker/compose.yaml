@@ -9,5 +9,7 @@ services:
     tty: true
     volumes:
       - ..:/workspace
+    ports:
+      - "8765:8765"
     environment:
       - RMW_IMPLEMENTATION=rmw_fastrtps_cpp
