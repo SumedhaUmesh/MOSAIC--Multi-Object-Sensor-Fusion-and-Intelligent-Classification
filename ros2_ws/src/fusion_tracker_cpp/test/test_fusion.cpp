@@ -4,11 +4,26 @@
 #include "fusion_tracker_cpp/ekf_tracker.hpp"
 #include "fusion_tracker_cpp/hungarian_assigner.hpp"
 
-TEST(FusionCore, HungarianAssigner) {
+TEST(FusionCore, HungarianAssignerOptimal2x2) {
   fusion_tracker_cpp::HungarianAssigner assigner;
-  std::vector<std::vector<double>> cost{{1.0, 4.0}, {3.0, 2.0}};
-  auto matches = assigner.assign(cost, 10.0);
-  EXPECT_EQ(matches.size(), 2U);
+  const std::vector<std::vector<double>> cost{{1.0, 4.0}, {3.0, 2.0}};
+  const auto col = assigner.assignSquare(cost);
+  ASSERT_EQ(col.size(), 2U);
+  EXPECT_EQ(col[0], 0U);
+  EXPECT_EQ(col[1], 1U);
+}
+
+TEST(FusionCore, HungarianAssignerOptimal3x3) {
+  // Minimum assignment cost is 10 (e.g. columns 2,1,0); a greedy pass over sorted edges yields 14.
+  fusion_tracker_cpp::HungarianAssigner assigner;
+  const std::vector<std::vector<double>> cost{{1.0, 2.0, 3.0}, {2.0, 4.0, 6.0}, {3.0, 6.0, 9.0}};
+  const auto col = assigner.assignSquare(cost);
+  ASSERT_EQ(col.size(), 3U);
+  double sum = 0.0;
+  for (std::size_t i = 0; i < 3; ++i) {
+    sum += cost[i][col[i]];
+  }
+  EXPECT_NEAR(sum, 10.0, 1e-9);
 }
 
 TEST(FusionCore, EkfUpdateMovesState) {

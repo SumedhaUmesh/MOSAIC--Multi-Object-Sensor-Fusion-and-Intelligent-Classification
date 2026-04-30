@@ -4,7 +4,7 @@
 
 1. Dataset replay publishes image and LiDAR topics.
 2. Camera and LiDAR perception nodes publish normalized `Detection3DArray`.
-3. Fusion tracker performs association and EKF updates, then publishes `TrackArray`.
+3. Fusion tracker performs Mahalanobis gating, minimum-cost (Hungarian) assignment with explicit unmatched track/detection slots, EKF updates, then publishes `TrackArray`.
 4. ADAS node consumes tracks and lane state JSON, then emits warnings.
 
 ## Topic Interfaces

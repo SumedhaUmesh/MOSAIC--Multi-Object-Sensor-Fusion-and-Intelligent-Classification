@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -15,6 +14,7 @@
 #include <mosaic_msgs/msg/track_array.hpp>
 
 #include "fusion_tracker_cpp/ekf_tracker.hpp"
+#include "fusion_tracker_cpp/hungarian_assigner.hpp"
 
 namespace {
 
@@ -41,35 +41,6 @@ double axisAlignedIou(const Eigen::Vector3d &c_a, const Eigen::Vector3d &s_a, co
 Eigen::Matrix3d measurementNoise(const mosaic_msgs::msg::Detection3D &det) {
   const double base = (det.source == "lidar") ? 0.35 : 1.0;
   return Eigen::Matrix3d::Identity() * base;
-}
-
-std::vector<std::pair<std::size_t, std::size_t>> greedyMinCostAssignment(const std::vector<std::tuple<double, std::size_t, std::size_t>> &candidates,
-                                                                          std::size_t row_count, std::size_t col_count, double max_cost) {
-  std::vector<std::tuple<double, std::size_t, std::size_t>> sorted = candidates;
-  std::sort(sorted.begin(), sorted.end(), [](const auto &a, const auto &b) { return std::get<0>(a) < std::get<0>(b); });
-
-  std::vector<char> used_row(row_count, 0);
-  std::vector<char> used_col(col_count, 0);
-  std::vector<std::pair<std::size_t, std::size_t>> matches;
-
-  for (const auto &entry : sorted) {
-    const double cost = std::get<0>(entry);
-    const std::size_t r = std::get<1>(entry);
-    const std::size_t c = std::get<2>(entry);
-    if (cost > max_cost) {
-      continue;
-    }
-    if (r >= used_row.size() || c >= used_col.size()) {
-      continue;
-    }
-    if (used_row[r] || used_col[c]) {
-      continue;
-    }
-    used_row[r] = 1;
-    used_col[c] = 1;
-    matches.emplace_back(r, c);
-  }
-  return matches;
 }
 
 struct TrackState {
@@ -101,7 +72,7 @@ public:
         std::bind(&FusionTrackerNode::lidarCallback, this, std::placeholders::_1));
     tracks_pub_ = create_publisher<mosaic_msgs::msg::TrackArray>("/mosaic/tracks", 10);
     timer_ = create_wall_timer(std::chrono::milliseconds(100), std::bind(&FusionTrackerNode::tick, this));
-    RCLCPP_INFO(get_logger(), "Fusion tracker node started (gated assignment + EKF).");
+    RCLCPP_INFO(get_logger(), "Fusion tracker node started (Hungarian assignment + EKF).");
   }
 
 private:
@@ -136,15 +107,18 @@ private:
       }
       std::sort(track_ids.begin(), track_ids.end());
 
-      std::vector<std::tuple<double, std::size_t, std::size_t>> candidates;
-      candidates.reserve(track_ids.size() * dets.size());
+      const std::size_t n = track_ids.size();
+      const std::size_t m = dets.size();
+      constexpr double k_big = 1e9;
+      const std::size_t s_dim = n + m;
+      std::vector<std::vector<double>> cost(s_dim, std::vector<double>(s_dim, k_big));
 
-      for (std::size_t c = 0; c < dets.size(); ++c) {
+      for (std::size_t c = 0; c < m; ++c) {
         const auto &det = dets[c];
         const Eigen::Vector3d z(det.center.x, det.center.y, det.center.z);
         const Eigen::Vector3d det_size(det.size.x, det.size.y, det.size.z);
 
-        for (std::size_t track_idx = 0; track_idx < track_ids.size(); ++track_idx) {
+        for (std::size_t track_idx = 0; track_idx < n; ++track_idx) {
           const int id = track_ids[track_idx];
           auto &tr = tracks_.at(id);
           const Eigen::VectorXd &x = tr.ekf.state();
@@ -167,17 +141,36 @@ private:
           }
 
           const double iou = axisAlignedIou(x_pos, tr.size, z, det_size);
-          const double cost = mahal + iou_w * (1.0 - iou);
-          candidates.emplace_back(cost, track_idx, c);
+          cost[track_idx][c] = mahal + iou_w * (1.0 - iou);
         }
       }
 
-      const auto matches = greedyMinCostAssignment(candidates, track_ids.size(), dets.size(), max_cost);
+      for (std::size_t i = 0; i < n; ++i) {
+        for (std::size_t k = 0; k < n; ++k) {
+          cost[i][m + k] = (i == k) ? 0.0 : k_big;
+        }
+      }
+      for (std::size_t d = 0; d < m; ++d) {
+        for (std::size_t j = 0; j < m; ++j) {
+          cost[n + d][j] = (d == j) ? 0.0 : k_big;
+        }
+        for (std::size_t k = 0; k < n; ++k) {
+          cost[n + d][m + k] = k_big;
+        }
+      }
+
+      fusion_tracker_cpp::HungarianAssigner hungarian;
+      const std::vector<std::size_t> col_for_row = hungarian.assignSquare(cost);
       std::vector<char> det_used(dets.size(), 0);
 
-      for (const auto &m : matches) {
-        const std::size_t r = m.first;
-        const std::size_t c = m.second;
+      for (std::size_t r = 0; r < n; ++r) {
+        const std::size_t c = col_for_row[r];
+        if (c >= m) {
+          continue;
+        }
+        if (cost[r][c] > max_cost || cost[r][c] >= k_big * 0.5) {
+          continue;
+        }
         const int id = track_ids[r];
         auto &tr = tracks_.at(id);
         const auto &det = dets[c];

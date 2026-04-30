@@ -1,15 +1,15 @@
 #pragma once
 
 #include <cstddef>
-#include <utility>
 #include <vector>
 
 namespace fusion_tracker_cpp {
 
 class HungarianAssigner {
 public:
-  std::vector<std::pair<std::size_t, std::size_t>>
-  assign(const std::vector<std::vector<double>> &cost_matrix, double max_cost) const;
+  // Minimum-cost perfect matching on a square cost matrix (rows == cols).
+  // Returns col_assignment[i] = column index matched to row i.
+  std::vector<std::size_t> assignSquare(const std::vector<std::vector<double>> &cost_matrix) const;
 };
 
 }  // namespace fusion_tracker_cpp
