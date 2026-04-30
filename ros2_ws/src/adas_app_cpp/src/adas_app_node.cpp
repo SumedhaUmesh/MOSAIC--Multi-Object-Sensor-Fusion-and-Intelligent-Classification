@@ -1,7 +1,9 @@
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -62,6 +64,7 @@ public:
         "/mosaic/lanes/state", 10, std::bind(&AdasAppNode::lanesCallback, this, std::placeholders::_1));
     pub_ = create_publisher<mosaic_msgs::msg::AdasWarning>("/mosaic/adas/warnings", 10);
     declare_parameter("ttc_threshold", 2.5);
+    declare_parameter("publish_fcw_on_rising_edge_only", true);
     declare_parameter("publish_ldw_on_rising_edge_only", true);
     RCLCPP_INFO(get_logger(), "ADAS app node started.");
   }
@@ -69,20 +72,31 @@ public:
 private:
   void tracksCallback(const mosaic_msgs::msg::TrackArray::SharedPtr msg) {
     const double ttc_threshold = get_parameter("ttc_threshold").as_double();
+    const bool fcw_rising_only = get_parameter("publish_fcw_on_rising_edge_only").as_bool();
     for (const auto &track : msg->tracks) {
       const double rel_x = track.position.x;
       const double rel_vx = track.velocity.x;
+      const int tid = track.track_id;
+      double ttc = std::numeric_limits<double>::infinity();
+      bool in_zone = false;
       if (rel_vx < -0.1) {
-        const double ttc = std::abs(rel_x / rel_vx);
-        if (ttc < ttc_threshold) {
+        ttc = std::abs(rel_x / rel_vx);
+        in_zone = (ttc < ttc_threshold);
+      }
+      const bool was_in_zone = fcw_zone_latched_[tid];
+      if (in_zone) {
+        if (!fcw_rising_only || !was_in_zone) {
           mosaic_msgs::msg::AdasWarning w;
           w.header = msg->header;
           w.warning_type = "forward_collision";
-          w.track_id = track.track_id;
+          w.track_id = tid;
           w.severity = static_cast<float>(1.0 / std::max(ttc, 0.1));
           w.message = "Potential forward collision detected";
           pub_->publish(w);
         }
+        fcw_zone_latched_[tid] = true;
+      } else {
+        fcw_zone_latched_[tid] = false;
       }
     }
   }
@@ -121,6 +135,7 @@ private:
   }
 
   bool last_lane_departure_;
+  std::unordered_map<int, bool> fcw_zone_latched_;
 
   rclcpp::Subscription<mosaic_msgs::msg::TrackArray>::SharedPtr tracks_sub_;
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr lanes_sub_;

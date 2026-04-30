@@ -43,6 +43,16 @@ ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/da
 
 Always use `--merge-install` for this workspace so Python and C++ packages share one `install/` layout.
 
+### ADAS node parameters (`adas_app_cpp`)
+
+Set on the `adas_app_node` (for example in a custom launch or via `ros2 param set`):
+
+| Parameter | Default | Role |
+|-----------|---------|------|
+| `ttc_threshold` | `2.5` | FCW: publish when time-to-collision (seconds) is below this while closing speed is significant. |
+| `publish_fcw_on_rising_edge_only` | `true` | If true, emit one FCW per track when it **enters** the TTC zone; clears when the track leaves the zone. Set `false` for a warning every tracker tick while in zone. |
+| `publish_ldw_on_rising_edge_only` | `true` | Same idea for lane departure: warn on transition into departure, not on every message while latched. |
+
 ### Docker Desktop / Fast DDS shared memory noise
 
 If you see `RTPS_TRANSPORT_SHM Error` spam, the dev container sets `FASTRTPS_DEFAULT_PROFILES_FILE` to
