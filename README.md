@@ -72,37 +72,53 @@ docker compose up --build -d --force-recreate
 
 ## Visualization (Foxglove Studio)
 
-Foxglove gives you a real desktop UI for images, point clouds, and plots without relying on RViz inside Docker.
+Foxglove gives you a live desktop UI for the camera, LiDAR, and topics—no RViz inside Docker.
 
-1. Install **Foxglove Studio** on macOS.
-2. Rebuild the dev container so `ros-humble-foxglove-bridge` is present:
+### One-time setup
+
+1. Install **[Foxglove Studio](https://foxglove.dev/download)** on your Mac.
+2. Ensure the dev image includes the bridge (already in `docker/Dockerfile`). Rebuild if you pulled an older tree:
 
 ```bash
 cd docker
 docker compose up --build -d
 ```
 
-3. Run your pipeline in the container (same as Quick Start).
-4. Start the bridge (from your Mac host, this runs detached in the container):
+### Every session (order matters)
+
+1. **Start the pipeline** in the container (Quick Start: `ros2 launch mosaic_bringup mosaic_pipeline.launch.py ...`). Wait until nodes are publishing (optional: `ros2 topic hz /mosaic/camera/image_raw`).
+2. **Start the bridge** from the Mac host (uses port **8765**, forwarded by Compose):
 
 ```bash
 cd docker
 docker compose exec -d mosaic-dev bash -lc "chmod +x /workspace/scripts/run_foxglove_bridge.sh && /workspace/scripts/run_foxglove_bridge.sh"
 ```
 
-5. In Foxglove Studio, create a **Foxglove WebSocket** connection to:
+3. Open **Foxglove Studio** → **Open data source** / **Connect** (wording depends on version) → choose **Foxglove WebSocket** → URL:
 
 `ws://127.0.0.1:8765`
 
-Suggested starter subscriptions:
+After it connects, you should see ROS topics in the sidebar (e.g. `/mosaic/...`). If the topic list is empty, confirm the pipeline is running and restart the bridge command above.
 
-- `/mosaic/camera/image_raw`
-- `/mosaic/lidar/points`
-- `/mosaic/detections/camera`
-- `/mosaic/detections/lidar`
-- `/mosaic/tracks`
-- `/mosaic/lanes/state` (raw JSON string)
-- `/mosaic/adas/warnings`
+### Panels to see camera + LiDAR
+
+| Goal | What to do |
+|------|------------|
+| **Camera** | **Add panel** → **Image** → set image topic to `/mosaic/camera/image_raw`. |
+| **LiDAR** | **Add panel** → **3D** → enable `/mosaic/lidar/points` under point clouds (or pick it from the topic picker). Set **Fixed frame** / display frame to **`base_link`** (replay uses this frame for image + cloud). |
+| **Tracks / ADAS / lanes** | **Add panel** → **Raw Messages** (or **Log**) → choose `/mosaic/tracks`, `/mosaic/adas/warnings`, or `/mosaic/lanes/state`. Custom `mosaic_msgs` types are easiest to read here unless you add a Plot extension. |
+
+Other useful topics: `/mosaic/detections/camera`, `/mosaic/detections/lidar`.
+
+### Layout import (optional)
+
+You can save your own workspace once and reuse it: **Layouts** → export JSON; teammates **Import from file**. Foxglove’s layout format changes occasionally—building once locally is the most reliable.
+
+### If Mac cannot connect
+
+- Confirm Compose maps **8765** (`docker compose.yaml`).
+- Confirm nothing else on the Mac is bound to 8765.
+- Run the bridge **after** sourcing ROS inside the container (the script does this); keep **one** bridge instance (avoid launching twice).
 
 ## Recording a trace (`ros2 bag`)
 
