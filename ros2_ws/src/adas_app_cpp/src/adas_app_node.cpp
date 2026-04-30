@@ -1,16 +1,68 @@
 #include <cmath>
 #include <memory>
+#include <optional>
+#include <string>
+
 #include <rclcpp/rclcpp.hpp>
-#include <mosaic_msgs/msg/track_array.hpp>
+
 #include <mosaic_msgs/msg/adas_warning.hpp>
+#include <mosaic_msgs/msg/track_array.hpp>
+#include <std_msgs/msg/string.hpp>
+
+namespace {
+
+bool parseLaneDepartureJson(const std::string &json, bool *departure, std::optional<double> *offset_px) {
+  if (!departure || !offset_px) {
+    return false;
+  }
+
+  const auto pos = json.find("\"lane_departure\"");
+  if (pos == std::string::npos) {
+    return false;
+  }
+
+  const auto true_token = json.find("true", pos);
+  const auto false_token = json.find("false", pos);
+  if (true_token == std::string::npos && false_token == std::string::npos) {
+    return false;
+  }
+
+  if (true_token != std::string::npos && (false_token == std::string::npos || true_token < false_token)) {
+    *departure = true;
+  } else {
+    *departure = false;
+  }
+
+  offset_px->reset();
+  const auto key = std::string("\"offset_from_image_center_px\"");
+  const auto kpos = json.find(key);
+  if (kpos != std::string::npos) {
+    const auto colon = json.find(':', kpos + key.size());
+    if (colon != std::string::npos) {
+      try {
+        const auto substr = json.substr(colon + 1);
+        *offset_px = std::stod(substr);
+      } catch (...) {
+        offset_px->reset();
+      }
+    }
+  }
+
+  return true;
+}
+
+}  // namespace
 
 class AdasAppNode : public rclcpp::Node {
 public:
-  AdasAppNode() : Node("adas_app_node") {
-    sub_ = create_subscription<mosaic_msgs::msg::TrackArray>(
+  AdasAppNode() : Node("adas_app_node"), last_lane_departure_(false) {
+    tracks_sub_ = create_subscription<mosaic_msgs::msg::TrackArray>(
         "/mosaic/tracks", 10, std::bind(&AdasAppNode::tracksCallback, this, std::placeholders::_1));
+    lanes_sub_ = create_subscription<std_msgs::msg::String>(
+        "/mosaic/lanes/state", 10, std::bind(&AdasAppNode::lanesCallback, this, std::placeholders::_1));
     pub_ = create_publisher<mosaic_msgs::msg::AdasWarning>("/mosaic/adas/warnings", 10);
     declare_parameter("ttc_threshold", 2.5);
+    declare_parameter("publish_ldw_on_rising_edge_only", true);
     RCLCPP_INFO(get_logger(), "ADAS app node started.");
   }
 
@@ -35,7 +87,43 @@ private:
     }
   }
 
-  rclcpp::Subscription<mosaic_msgs::msg::TrackArray>::SharedPtr sub_;
+  void lanesCallback(const std_msgs::msg::String::SharedPtr msg) {
+    bool departure = false;
+    std::optional<double> offset_px;
+    if (!parseLaneDepartureJson(msg->data, &departure, &offset_px)) {
+      return;
+    }
+
+    const bool rising_only = get_parameter("publish_ldw_on_rising_edge_only").as_bool();
+    const bool rising = departure && !last_lane_departure_;
+    last_lane_departure_ = departure;
+
+    if (!departure) {
+      return;
+    }
+    if (rising_only && !rising) {
+      return;
+    }
+
+    mosaic_msgs::msg::AdasWarning w;
+    w.header.stamp = now();
+    w.header.frame_id = "base_link";
+    w.warning_type = "lane_departure";
+    w.track_id = 0;
+    w.severity = 1.0F;
+    if (offset_px.has_value()) {
+      w.severity = static_cast<float>(std::min(5.0, std::abs(offset_px.value()) / 20.0));
+      w.message = "Lane departure detected (lateral offset from lane center)";
+    } else {
+      w.message = "Lane departure detected";
+    }
+    pub_->publish(w);
+  }
+
+  bool last_lane_departure_;
+
+  rclcpp::Subscription<mosaic_msgs::msg::TrackArray>::SharedPtr tracks_sub_;
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr lanes_sub_;
   rclcpp::Publisher<mosaic_msgs::msg::AdasWarning>::SharedPtr pub_;
 };
 

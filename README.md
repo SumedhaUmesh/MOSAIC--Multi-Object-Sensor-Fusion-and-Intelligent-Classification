@@ -16,6 +16,7 @@ multi-object tracking, and ADAS warning logic.
 - `ros2_ws/src/mosaic_msgs`: custom ROS2 interfaces
 - `ros2_ws/src/dataset_replay_py`: KITTI replay node
 - `ros2_ws/src/perception_camera_py`: camera perception node
+- `ros2_ws/src/lane_detection_py`: classical lane detection node
 - `ros2_ws/src/perception_lidar_cpp`: LiDAR perception node
 - `ros2_ws/src/fusion_tracker_cpp`: association + EKF tracking core
 - `ros2_ws/src/adas_app_cpp`: FCW and warning node
@@ -38,6 +39,18 @@ cd /workspace/ros2_ws
 colcon build
 source install/setup.bash
 ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/data/kitti sequence:=0
+```
+
+### Docker Desktop / Fast DDS shared memory noise
+
+If you see `RTPS_TRANSPORT_SHM Error` spam, the dev container sets `FASTRTPS_DEFAULT_PROFILES_FILE` to
+`docker/fastdds_disable_shm.xml` to force UDP-only transport (more reliable in Docker Desktop).
+
+If you still see SHM errors, rebuild/recreate the container so the updated `docker/compose.yaml` + `entrypoint.sh` take effect:
+
+```bash
+cd docker
+docker compose up --build -d --force-recreate
 ```
 
 ## Visualization (Foxglove Studio)

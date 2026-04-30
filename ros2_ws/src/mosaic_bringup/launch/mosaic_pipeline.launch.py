@@ -19,6 +19,7 @@ def generate_launch_description() -> LaunchDescription:
                 parameters=[{"dataset_root": dataset_root, "sequence": sequence}],
             ),
             Node(package="perception_camera_py", executable="camera_perception_node", output="screen"),
+            Node(package="lane_detection_py", executable="lane_detection_node", output="screen"),
             Node(package="perception_lidar_cpp", executable="lidar_perception_node", output="screen"),
             Node(package="fusion_tracker_cpp", executable="fusion_tracker_node", output="screen"),
             Node(package="adas_app_cpp", executable="adas_app_node", output="screen"),
