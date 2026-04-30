@@ -1,0 +1,20 @@
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Class: rviz_default_plugins/Grid
+      Enabled: true
+      Name: Grid
+    - Class: rviz_default_plugins/Image
+      Enabled: true
+      Image Topic: /mosaic/camera/image_raw
+      Name: Camera
+    - Class: rviz_default_plugins/PointCloud2
+      Enabled: true
+      Name: LiDAR
+      Topic: /mosaic/lidar/points
+  Global Options:
+    Fixed Frame: base_link

@@ -1,0 +1,13 @@
+services:
+  mosaic-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: mosaic-dev
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    volumes:
+      - ..:/workspace
+    environment:
+      - RMW_IMPLEMENTATION=rmw_fastrtps_cpp

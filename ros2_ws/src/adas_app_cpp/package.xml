@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>adas_app_cpp</name>
+  <version>0.1.0</version>
+  <description>ADAS application layer: FCW and lane departure warnings.</description>
+  <maintainer email="dev@example.com">MOSAIC</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>mosaic_msgs</depend>
+</package>

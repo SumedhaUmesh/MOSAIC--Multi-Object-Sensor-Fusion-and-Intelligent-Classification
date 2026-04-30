@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>perception_camera_py</name>
+  <version>0.1.0</version>
+  <description>Camera perception node using YOLOv8.</description>
+  <maintainer email="dev@example.com">MOSAIC</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>mosaic_msgs</exec_depend>
+</package>

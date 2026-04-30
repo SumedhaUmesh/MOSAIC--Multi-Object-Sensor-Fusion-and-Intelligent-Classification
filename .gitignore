@@ -1,0 +1,16 @@
+.DS_Store
+build/
+install/
+log/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.swp
+*.swo
+*.egg-info/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+data/kitti/
+outputs/

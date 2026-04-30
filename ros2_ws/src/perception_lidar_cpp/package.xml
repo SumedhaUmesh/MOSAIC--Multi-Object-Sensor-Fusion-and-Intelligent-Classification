@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>perception_lidar_cpp</name>
+  <version>0.1.0</version>
+  <description>LiDAR perception package in C++.</description>
+  <maintainer email="dev@example.com">MOSAIC</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>mosaic_msgs</depend>
+  <depend>pcl_ros</depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
+</package>
