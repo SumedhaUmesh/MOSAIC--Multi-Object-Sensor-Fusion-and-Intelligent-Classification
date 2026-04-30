@@ -22,6 +22,7 @@ multi-object tracking, and ADAS warning logic.
 - `ros2_ws/src/adas_app_cpp`: FCW + lane-departure warnings from fused tracks and lane JSON
 - `ros2_ws/src/mosaic_bringup`: launch files and RViz config
 - `scripts/evaluate_fusion.py`: RMSE comparison utility
+- `scripts/record_mosaic_bag.sh`: record core `/mosaic/*` topics with `ros2 bag`
 
 ## Quick Start (Docker)
 
@@ -98,6 +99,21 @@ Suggested starter subscriptions:
 - `/mosaic/tracks`
 - `/mosaic/lanes/state` (raw JSON string)
 - `/mosaic/adas/warnings`
+
+## Recording a trace (`ros2 bag`)
+
+With the pipeline running in the container and both setups sourced, start a bag in a **second** shell (Ctrl+C stops recording):
+
+```bash
+source /opt/ros/humble/setup.bash
+source /workspace/ros2_ws/install/setup.bash
+chmod +x /workspace/scripts/record_mosaic_bag.sh
+/workspace/scripts/record_mosaic_bag.sh
+```
+
+Optional path: `/workspace/scripts/record_mosaic_bag.sh /workspace/bags/my_run`. Bags default under `bags/` at the repo root; that directory is listed in `.gitignore`.
+
+Including the camera image makes bags **large** quickly; edit the script’s topic list if you only need tracks, lanes, or ADAS messages.
 
 ## Metrics Workflow
 
