@@ -54,6 +54,10 @@ Set on the `adas_app_node` (for example in a custom launch or via `ros2 param se
 | `publish_fcw_on_rising_edge_only` | `true` | If true, emit one FCW per track when it **enters** the TTC zone; clears when the track leaves the zone. Set `false` for a warning every tracker tick while in zone. |
 | `publish_ldw_on_rising_edge_only` | `true` | Same idea for lane departure: warn on transition into departure, not on every message while latched. |
 
+`mosaic_pipeline.launch.py` forwards these as launch arguments (same defaults): `adas_ttc_threshold`, `adas_publish_fcw_on_rising_edge_only`, `adas_publish_ldw_on_rising_edge_only`. Example:
+
+`ros2 launch mosaic_bringup mosaic_pipeline.launch.py adas_ttc_threshold:=3.0 adas_publish_fcw_on_rising_edge_only:=false`
+
 ### Docker Desktop / Fast DDS shared memory noise
 
 If you see `RTPS_TRANSPORT_SHM Error` spam, the dev container sets `FASTRTPS_DEFAULT_PROFILES_FILE` to
