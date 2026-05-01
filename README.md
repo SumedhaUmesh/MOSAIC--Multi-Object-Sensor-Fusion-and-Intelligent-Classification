@@ -26,6 +26,8 @@ multi-object tracking, and ADAS warning logic.
 - `scripts/check_live_topics.sh`: quick check that camera/LiDAR topics publish (run in container)
 - `scripts/evaluate_kitti_tracks.py`: starter KITTI-label vs fused-tracks metrics (stdlib-only; see Metrics + `docs/roadmap.md`)
 - `docs/roadmap.md`: what is “done” for demo vs research vs shipping
+- `docs/production.md`: production-oriented baseline vs external certification work
+- `scripts/health_check.sh`: topic liveness probe for orchestration (run while pipeline is up)
 
 ## Quick Start (Docker)
 
@@ -52,6 +54,19 @@ ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/da
 ```
 
 Always use `--merge-install` for this workspace so Python and C++ packages share one `install/` layout.
+
+### Production orientation
+
+Defaults for replay rate, perception, fusion, ADAS, and Foxglove live in **`ros2_ws/src/mosaic_bringup/config/mosaic_defaults.yaml`** (loaded by `mosaic_pipeline.launch.py`; launch arguments still override).
+
+See **`docs/production.md`** for what that covers versus real safety qualification (ISO-style process, HW sign-off, cybersecurity, etc.). To probe a running stack:
+
+```bash
+source /opt/ros/humble/setup.bash
+source /workspace/ros2_ws/install/setup.bash
+chmod +x /workspace/scripts/health_check.sh
+/workspace/scripts/health_check.sh
+```
 
 ### ADAS node parameters (`adas_app_cpp`)
 

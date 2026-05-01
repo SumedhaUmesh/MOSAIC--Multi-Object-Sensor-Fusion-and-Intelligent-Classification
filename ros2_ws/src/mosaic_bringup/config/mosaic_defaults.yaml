@@ -1,0 +1,55 @@
+# Versioned defaults for MOSAIC pipeline nodes (override via launch args or extra YAML).
+# Loaded by mosaic_pipeline.launch.py before per-run launch substitutions.
+
+kitti_replay_node:
+  ros__parameters:
+    publish_rate_hz: 10.0
+    loop: true
+
+camera_perception_node:
+  ros__parameters:
+    confidence_threshold: 0.35
+    model_name: "yolov8n.pt"
+    device: ""
+    imgsz: 640
+    max_detections: 25
+    calibration_topic: "/mosaic/camera/calibration"
+
+lane_detection_node:
+  ros__parameters:
+    canny_low: 50
+    canny_high: 150
+    hough_threshold: 40
+    min_line_length: 40
+    max_line_gap: 150
+    roi_top_ratio: 0.55
+    departure_threshold_px: 60.0
+    min_lane_width_px: 250.0
+
+lidar_perception_node:
+  ros__parameters:
+    voxel_leaf_size: 0.25
+    cluster_tolerance: 0.75
+    cluster_min_size: 18
+    cluster_max_size: 25000
+
+fusion_tracker_node:
+  ros__parameters:
+    prediction_dt: 0.1
+    max_assignment_cost: 12.0
+    mahalanobis_gate: 9.21
+    iou_weight: 2.0
+    confirm_hits: 3
+    tentative_max_misses: 2
+    confirmed_max_misses: 8
+
+adas_app_node:
+  ros__parameters:
+    ttc_threshold: 2.5
+    publish_fcw_on_rising_edge_only: true
+    publish_ldw_on_rising_edge_only: true
+
+foxglove_bridge:
+  ros__parameters:
+    port: 8765
+    address: "0.0.0.0"

@@ -1,5 +1,7 @@
 # MOSAIC roadmap: demo vs research vs product
 
+For deployable defaults, health probes, and honest scope vs automotive certification, see **`production.md`**.
+
 The repository is **complete as an integrated ROS 2 scaffold and demo**: Dockerized Humble stack, KITTI replay, camera and LiDAR perception, fusion with Hungarian assignment and EKF-style updates, ADAS warnings, lane JSON, Foxglove, bags, and CI.
 
 It is **not complete in a shipping-product sense**: there is no full benchmark harness against KITTI labels (beyond the starter script in `scripts/evaluate_kitti_tracks.py`), no systematic tuning or ablation study, no simulator hook (for example CARLA), and lane departure remains **baseline heuristics**, not road-certified logic.

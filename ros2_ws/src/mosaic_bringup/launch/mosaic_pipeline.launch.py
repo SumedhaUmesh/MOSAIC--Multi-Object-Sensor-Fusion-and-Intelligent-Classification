@@ -1,9 +1,10 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution, PythonExpression
 from launch_ros.actions import Node
-from launch_ros.parameter_descriptions import ParameterValue
+from launch_ros.parameter_descriptions import ParameterFile, ParameterValue
+from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -20,6 +21,11 @@ def generate_launch_description() -> LaunchDescription:
     fusion_confirm_hits = LaunchConfiguration("fusion_confirm_hits")
     fusion_tentative_max_misses = LaunchConfiguration("fusion_tentative_max_misses")
     fusion_confirmed_max_misses = LaunchConfiguration("fusion_confirmed_max_misses")
+
+    mosaic_defaults = ParameterFile(
+        PathJoinSubstitution([FindPackageShare("mosaic_bringup"), "config", "mosaic_defaults.yaml"]),
+        allow_substs=False,
+    )
 
     return LaunchDescription(
         [
@@ -45,16 +51,35 @@ def generate_launch_description() -> LaunchDescription:
                 package="dataset_replay_py",
                 executable="kitti_replay_node",
                 output="screen",
-                parameters=[{"dataset_root": dataset_root, "sequence": sequence}],
+                parameters=[
+                    mosaic_defaults,
+                    {"dataset_root": dataset_root, "sequence": sequence},
+                ],
             ),
-            Node(package="perception_camera_py", executable="camera_perception_node", output="screen"),
-            Node(package="lane_detection_py", executable="lane_detection_node", output="screen"),
-            Node(package="perception_lidar_cpp", executable="lidar_perception_node", output="screen"),
+            Node(
+                package="perception_camera_py",
+                executable="camera_perception_node",
+                output="screen",
+                parameters=[mosaic_defaults],
+            ),
+            Node(
+                package="lane_detection_py",
+                executable="lane_detection_node",
+                output="screen",
+                parameters=[mosaic_defaults],
+            ),
+            Node(
+                package="perception_lidar_cpp",
+                executable="lidar_perception_node",
+                output="screen",
+                parameters=[mosaic_defaults],
+            ),
             Node(
                 package="fusion_tracker_cpp",
                 executable="fusion_tracker_node",
                 output="screen",
                 parameters=[
+                    mosaic_defaults,
                     {
                         "prediction_dt": ParameterValue(fusion_prediction_dt, value_type=float),
                         "max_assignment_cost": ParameterValue(fusion_max_assignment_cost, value_type=float),
@@ -63,7 +88,7 @@ def generate_launch_description() -> LaunchDescription:
                         "confirm_hits": ParameterValue(fusion_confirm_hits, value_type=int),
                         "tentative_max_misses": ParameterValue(fusion_tentative_max_misses, value_type=int),
                         "confirmed_max_misses": ParameterValue(fusion_confirmed_max_misses, value_type=int),
-                    }
+                    },
                 ],
             ),
             Node(
@@ -71,11 +96,12 @@ def generate_launch_description() -> LaunchDescription:
                 executable="adas_app_node",
                 output="screen",
                 parameters=[
+                    mosaic_defaults,
                     {
                         "ttc_threshold": ParameterValue(adas_ttc, value_type=float),
                         "publish_fcw_on_rising_edge_only": ParameterValue(adas_fcw_rising, value_type=bool),
                         "publish_ldw_on_rising_edge_only": ParameterValue(adas_ldw_rising, value_type=bool),
-                    }
+                    },
                 ],
             ),
             Node(
@@ -87,6 +113,7 @@ def generate_launch_description() -> LaunchDescription:
                 name="foxglove_bridge",
                 output="screen",
                 parameters=[
+                    mosaic_defaults,
                     {"port": ParameterValue(foxglove_port, value_type=int)},
                     {"address": "0.0.0.0"},
                 ],
