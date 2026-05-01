@@ -1,4 +1,0 @@
-fusion_tracker_node:
-  ros__parameters:
-    max_assignment_cost: 6.0
-    max_missed_frames: 5

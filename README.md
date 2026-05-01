@@ -27,6 +27,7 @@ multi-object tracking, and ADAS warning logic.
 - `scripts/evaluate_kitti_tracks.py`: starter KITTI-label vs fused-tracks metrics (stdlib-only; see Metrics + `docs/roadmap.md`)
 - `docs/roadmap.md`: what is “done” for demo vs research vs shipping
 - `docs/production.md`: production-oriented baseline vs external certification work
+- `CHANGELOG.md`: what changed, written for humans
 - `scripts/health_check.sh`: topic liveness probe for orchestration (run while pipeline is up)
 
 ## Quick Start (Docker)
