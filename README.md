@@ -24,7 +24,7 @@ multi-object tracking, and ADAS warning logic.
 - `scripts/evaluate_fusion.py`: RMSE comparison utility
 - `scripts/record_mosaic_bag.sh`: record core `/mosaic/*` topics with `ros2 bag`
 - `scripts/check_live_topics.sh`: quick check that camera/LiDAR topics publish (run in container)
-- `scripts/evaluate_kitti_tracks.py`: starter KITTI-label vs fused-tracks metrics (see Metrics + `docs/roadmap.md`)
+- `scripts/evaluate_kitti_tracks.py`: starter KITTI-label vs fused-tracks metrics (stdlib-only; see Metrics + `docs/roadmap.md`)
 - `docs/roadmap.md`: what is “done” for demo vs research vs shipping
 
 ## Quick Start (Docker)

@@ -14,6 +14,7 @@ out_path="${1:-${repo_root}/bags/${default_name}}"
 mkdir -p "$(dirname "${out_path}")"
 
 exec ros2 bag record -o "${out_path}" \
+  /mosaic/replay/frame_index \
   /mosaic/camera/image_raw \
   /mosaic/camera/calibration \
   /mosaic/lidar/points \

@@ -28,6 +28,8 @@ jobs:
           source /opt/ros/humble/setup.bash
           source ros2_ws/install/setup.bash
           ros2 launch mosaic_bringup mosaic_pipeline.launch.py --show-args
+      - name: Smoke test KITTI eval script
+        run: python3 scripts/test_evaluate_kitti_tracks_smoke.py
       - name: Test
         run: |
           source /opt/ros/humble/setup.bash
