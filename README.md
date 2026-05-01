@@ -23,6 +23,7 @@ multi-object tracking, and ADAS warning logic.
 - `ros2_ws/src/mosaic_bringup`: launch files and RViz config
 - `scripts/evaluate_fusion.py`: RMSE comparison utility
 - `scripts/record_mosaic_bag.sh`: record core `/mosaic/*` topics with `ros2 bag`
+- `scripts/check_live_topics.sh`: quick check that camera/LiDAR topics publish (run in container)
 
 ## Quick Start (Docker)
 
@@ -40,6 +41,12 @@ cd /workspace/ros2_ws
 colcon build --merge-install
 source install/setup.bash
 ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/data/kitti sequence:=0
+```
+
+To start **Foxglove’s bridge in the same launch** (WebSocket on port **8765**), add `launch_foxglove_bridge:=true` (optional):
+
+```bash
+ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/data/kitti sequence:=0 launch_foxglove_bridge:=true
 ```
 
 Always use `--merge-install` for this workspace so Python and C++ packages share one `install/` layout.
@@ -86,19 +93,28 @@ docker compose up --build -d
 
 ### Every session (order matters)
 
-1. **Start the pipeline** in the container (Quick Start: `ros2 launch mosaic_bringup mosaic_pipeline.launch.py ...`). Wait until nodes are publishing (optional: `ros2 topic hz /mosaic/camera/image_raw`).
-2. **Start the bridge** from the Mac host (uses port **8765**, forwarded by Compose):
+**Option A — one launch (recommended):** start the pipeline **with** the bridge:
+
+```bash
+ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/data/kitti sequence:=0 launch_foxglove_bridge:=true
+```
+
+Optional: `foxglove_port:=8765` if you change the port (must match `docker/compose.yaml`).
+
+**Option B — bridge separately:** launch the pipeline **without** `launch_foxglove_bridge`, then from the Mac host:
 
 ```bash
 cd docker
 docker compose exec -d mosaic-dev bash -lc "chmod +x /workspace/scripts/run_foxglove_bridge.sh && /workspace/scripts/run_foxglove_bridge.sh"
 ```
 
-3. Open **Foxglove Studio** → **Open data source** / **Connect** (wording depends on version) → choose **Foxglove WebSocket** → URL:
+Wait until topics are flowing (optional: second shell + `/workspace/scripts/check_live_topics.sh`).
+
+**Then** open **Foxglove Studio** → **Open data source** / **Connect** → **Foxglove WebSocket** → URL:
 
 `ws://127.0.0.1:8765`
 
-After it connects, you should see ROS topics in the sidebar (e.g. `/mosaic/...`). If the topic list is empty, confirm the pipeline is running and restart the bridge command above.
+After it connects, you should see ROS topics in the sidebar (e.g. `/mosaic/...`). If the topic list is empty, confirm the pipeline is running and reconnect (or restart the bridge if you use Option B).
 
 ### Panels to see camera + LiDAR
 
@@ -118,7 +134,30 @@ You can save your own workspace once and reuse it: **Layouts** → export JSON; 
 
 - Confirm Compose maps **8765** (`docker compose.yaml`).
 - Confirm nothing else on the Mac is bound to 8765.
-- Run the bridge **after** sourcing ROS inside the container (the script does this); keep **one** bridge instance (avoid launching twice).
+- Run **at most one** bridge on **8765**: do not use `launch_foxglove_bridge:=true` **and** the `exec -d` script at the same time.
+
+### Foxglove connected but you see nothing
+
+Work through these in order:
+
+1. **Confirm ROS is actually publishing** (second shell in the container while `mosaic_pipeline` runs):
+
+```bash
+chmod +x /workspace/scripts/check_live_topics.sh
+/workspace/scripts/check_live_topics.sh
+```
+
+You should see `OK: received a message` for camera and LiDAR. If both fail, fix the pipeline or `dataset_root` first—not Foxglove.
+
+2. **Confirm the bridge is running** (on the Mac): start it only after the pipeline is up, then in Foxglove **disconnect and reconnect** `ws://127.0.0.1:8765` so the topic list refreshes.
+
+3. **Wait ~30s after launch** the first time: the camera node downloads/loads YOLO before images flow regularly.
+
+4. **Panel topic names**: open each panel’s **settings (gear)** and set exactly **`/mosaic/camera/image_raw`** and **`/mosaic/lidar/points`** (an old saved layout can point at wrong topics).
+
+5. **3D view**: set **fixed frame** to **`base_link`**, then use **reset view** / fit (cloud can start outside the default camera frustum).
+
+6. **Sidebar**: click `/mosaic/camera/image_raw`—if **no messages** appear there while the check script passes, the WebSocket connection is wrong or stale; reconnect.
 
 ## Recording a trace (`ros2 bag`)
 

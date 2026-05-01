@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+# Avoid `set -u` before sourcing ROS env (optional AMENT_* vars may be unset).
+set -eo pipefail
 
 source /opt/ros/humble/setup.bash
 
