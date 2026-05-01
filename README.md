@@ -12,7 +12,7 @@ multi-object tracking, and ADAS warning logic.
 
 ## Repository Layout
 
-- `docker/`: containerized dev/runtime setup
+- `docker/`: Dockerfile, Compose, Fast DDS profile, pinned **`docker/requirements.txt`** (YOLO/scientific stack)
 - `ros2_ws/src/mosaic_msgs`: custom ROS2 interfaces
 - `ros2_ws/src/dataset_replay_py`: KITTI replay node
 - `ros2_ws/src/perception_camera_py`: camera perception node
@@ -55,6 +55,8 @@ ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/da
 ```
 
 Always use `--merge-install` for this workspace so Python and C++ packages share one `install/` layout.
+
+Compose builds from the **repo root**; a root **`.dockerignore`** skips KITTI data, bags, colcon outputs, and `.git` so the daemon upload stays small. Edit **`docker/requirements.txt`** only when you mean to change pinned NumPy/SciPy/Ultralytics versions.
 
 ### Production orientation
 

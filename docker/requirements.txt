@@ -1,0 +1,5 @@
+# Pinned for the mosaic-dev image (Ubuntu 22.04 / Python 3.10). Update together with Docker rebuilds
+# when you intentionally move YOLO or scientific stack versions.
+numpy==1.26.4
+scipy==1.11.4
+ultralytics==8.3.253

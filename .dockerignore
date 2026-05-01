@@ -1,0 +1,23 @@
+# Build context is repo root (see docker/compose.yaml). Speed up `docker compose build`
+# by keeping large or regenerated trees out of the daemon upload.
+
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+
+data/kitti/
+bags/
+outputs/
+
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+.venv/
+*.egg-info/
+
+.git/
+.cursor/
+
+.DS_Store
+*.swp
+*.swo

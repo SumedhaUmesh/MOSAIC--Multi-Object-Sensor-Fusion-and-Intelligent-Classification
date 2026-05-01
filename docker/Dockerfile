@@ -17,7 +17,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir ultralytics numpy scipy
+COPY docker/requirements.txt /tmp/mosaic-dev-requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/mosaic-dev-requirements.txt \
+    && rm -f /tmp/mosaic-dev-requirements.txt
 
 WORKDIR /workspace
 

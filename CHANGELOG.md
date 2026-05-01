@@ -4,6 +4,10 @@ All notable changes to MOSAIC are described here. This file is meant for humans 
 
 ## Unreleased
 
+- README Quick Start: notes `.dockerignore` (smaller Docker build context) and points to `docker/requirements.txt` for intentional dependency bumps; repository layout lists those paths under `docker/`.
+- Docker: `docker/requirements.txt` pins `numpy`, `scipy`, and `ultralytics` so `mosaic-dev` image builds stay reproducible across weeks (bump versions deliberately when you upgrade YOLO).
+- Repo-root `.dockerignore` so `docker compose build` (context `..` from `docker/`) does not send KITTI data, bags, colcon outputs, or `.git` to the daemon—faster rebuilds on typical laptops.
+- `mosaic_pipeline.launch.py`: every launch argument now has a short `description` so `ros2 launch ... --show-args` is self-documenting.
 - Production-ish baseline: shared defaults in `mosaic_bringup/config/mosaic_defaults.yaml`, `docs/production.md` spelling out what certification still needs from you, and `scripts/health_check.sh` for cheap topic liveness checks while the stack is running.
 - Removed the old `config/tracker.yaml` stub—it wasn’t wired into launch and drifted from the real fusion parameters (everything tunable lives in `mosaic_defaults.yaml` and launch args now).
 

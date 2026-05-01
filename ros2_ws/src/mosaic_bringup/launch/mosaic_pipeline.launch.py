@@ -29,24 +29,76 @@ def generate_launch_description() -> LaunchDescription:
 
     return LaunchDescription(
         [
-            DeclareLaunchArgument("dataset_root", default_value="/workspace/data/kitti"),
-            DeclareLaunchArgument("sequence", default_value="0"),
-            DeclareLaunchArgument("adas_ttc_threshold", default_value="2.5"),
-            DeclareLaunchArgument("adas_publish_fcw_on_rising_edge_only", default_value="true"),
-            DeclareLaunchArgument("adas_publish_ldw_on_rising_edge_only", default_value="true"),
+            DeclareLaunchArgument(
+                "dataset_root",
+                default_value="/workspace/data/kitti",
+                description="Root folder containing KITTI sequences (expects date folders with velodyne/, image_02/, etc.).",
+            ),
+            DeclareLaunchArgument(
+                "sequence",
+                default_value="0",
+                description="KITTI sequence id (folder name under dataset_root, e.g. 0 or 2011_09_26_drive_0001_sync).",
+            ),
+            DeclareLaunchArgument(
+                "adas_ttc_threshold",
+                default_value="2.5",
+                description="Forward collision warning: time-to-collision threshold in seconds.",
+            ),
+            DeclareLaunchArgument(
+                "adas_publish_fcw_on_rising_edge_only",
+                default_value="true",
+                description="If true, FCW alerts publish only on rising edge (new warning), not every tick.",
+            ),
+            DeclareLaunchArgument(
+                "adas_publish_ldw_on_rising_edge_only",
+                default_value="true",
+                description="If true, LDW alerts publish only on rising edge, not every tick.",
+            ),
             DeclareLaunchArgument(
                 "launch_foxglove_bridge",
                 default_value="false",
                 description="If true, start foxglove_bridge (WebSocket on foxglove_port for Foxglove Studio).",
             ),
-            DeclareLaunchArgument("foxglove_port", default_value="8765"),
-            DeclareLaunchArgument("fusion_prediction_dt", default_value="0.1"),
-            DeclareLaunchArgument("fusion_max_assignment_cost", default_value="12.0"),
-            DeclareLaunchArgument("fusion_mahalanobis_gate", default_value="9.21"),
-            DeclareLaunchArgument("fusion_iou_weight", default_value="2.0"),
-            DeclareLaunchArgument("fusion_confirm_hits", default_value="3"),
-            DeclareLaunchArgument("fusion_tentative_max_misses", default_value="2"),
-            DeclareLaunchArgument("fusion_confirmed_max_misses", default_value="8"),
+            DeclareLaunchArgument(
+                "foxglove_port",
+                default_value="8765",
+                description="TCP port for foxglove_bridge when launch_foxglove_bridge is true.",
+            ),
+            DeclareLaunchArgument(
+                "fusion_prediction_dt",
+                default_value="0.1",
+                description="Fusion tracker prediction step in seconds (EKF propagation interval).",
+            ),
+            DeclareLaunchArgument(
+                "fusion_max_assignment_cost",
+                default_value="12.0",
+                description="Hungarian association: maximum cost for a valid camera–LiDAR match.",
+            ),
+            DeclareLaunchArgument(
+                "fusion_mahalanobis_gate",
+                default_value="9.21",
+                description="Gating threshold for Mahalanobis distance (association consistency).",
+            ),
+            DeclareLaunchArgument(
+                "fusion_iou_weight",
+                default_value="2.0",
+                description="Weight for 2D IoU term in the fusion assignment cost.",
+            ),
+            DeclareLaunchArgument(
+                "fusion_confirm_hits",
+                default_value="3",
+                description="Consecutive association hits required to promote a track from tentative to confirmed.",
+            ),
+            DeclareLaunchArgument(
+                "fusion_tentative_max_misses",
+                default_value="2",
+                description="Max missed updates before dropping a tentative track.",
+            ),
+            DeclareLaunchArgument(
+                "fusion_confirmed_max_misses",
+                default_value="8",
+                description="Max missed updates before dropping a confirmed track.",
+            ),
             Node(
                 package="dataset_replay_py",
                 executable="kitti_replay_node",
