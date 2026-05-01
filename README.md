@@ -222,6 +222,7 @@ python3 scripts/evaluate_kitti_tracks.py \
   --kitti-root /workspace/data/kitti \
   --sequence 0 \
   --predictions /workspace/outputs/tracks_dump.json \
+  --calib /workspace/data/kitti/training/calib/0000.txt \
   --output /workspace/outputs/kitti_track_metrics.json
 ```
 
