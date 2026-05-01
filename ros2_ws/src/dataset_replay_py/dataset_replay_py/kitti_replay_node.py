@@ -8,7 +8,7 @@ from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile
 from sensor_msgs.msg import Image, PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
-from std_msgs.msg import Header, String
+from std_msgs.msg import Header, String, UInt32
 
 
 class KittiReplayNode(Node):
@@ -26,6 +26,7 @@ class KittiReplayNode(Node):
 
         self.image_pub = self.create_publisher(Image, "/mosaic/camera/image_raw", 10)
         self.lidar_pub = self.create_publisher(PointCloud2, "/mosaic/lidar/points", 10)
+        self.frame_index_pub = self.create_publisher(UInt32, "/mosaic/replay/frame_index", 10)
         qos_transient = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL)
         self.calib_pub = self.create_publisher(String, "/mosaic/camera/calibration", qos_transient)
 
@@ -107,6 +108,9 @@ class KittiReplayNode(Node):
         ]
         cloud = point_cloud2.create_cloud(header, fields, points.tolist())
 
+        idx_msg = UInt32()
+        idx_msg.data = int(self.frame_id)
+        self.frame_index_pub.publish(idx_msg)
         self.image_pub.publish(image_msg)
         self.lidar_pub.publish(cloud)
         self.frame_id += 1

@@ -24,6 +24,8 @@ multi-object tracking, and ADAS warning logic.
 - `scripts/evaluate_fusion.py`: RMSE comparison utility
 - `scripts/record_mosaic_bag.sh`: record core `/mosaic/*` topics with `ros2 bag`
 - `scripts/check_live_topics.sh`: quick check that camera/LiDAR topics publish (run in container)
+- `scripts/evaluate_kitti_tracks.py`: starter KITTI-label vs fused-tracks metrics (see Metrics + `docs/roadmap.md`)
+- `docs/roadmap.md`: what is “done” for demo vs research vs shipping
 
 ## Quick Start (Docker)
 
@@ -64,6 +66,10 @@ Set on the `adas_app_node` (for example in a custom launch or via `ros2 param se
 `mosaic_pipeline.launch.py` forwards these as launch arguments (same defaults): `adas_ttc_threshold`, `adas_publish_fcw_on_rising_edge_only`, `adas_publish_ldw_on_rising_edge_only`. Example:
 
 `ros2 launch mosaic_bringup mosaic_pipeline.launch.py adas_ttc_threshold:=3.0 adas_publish_fcw_on_rising_edge_only:=false`
+
+Fusion tuning uses the same launch file: arguments **`fusion_prediction_dt`**, **`fusion_max_assignment_cost`**, **`fusion_mahalanobis_gate`**, **`fusion_iou_weight`**, **`fusion_confirm_hits`**, **`fusion_tentative_max_misses`**, **`fusion_confirmed_max_misses`** (defaults match `fusion_tracker_node`). List everything with:
+
+`ros2 launch mosaic_bringup mosaic_pipeline.launch.py --show-args`
 
 ### Docker Desktop / Fast DDS shared memory noise
 
@@ -190,6 +196,34 @@ The report includes:
 - overall RMSE for camera, LiDAR, and fused
 - per-axis RMSE (`x`, `y`, `z`)
 - fused improvement percentage vs camera-only and lidar-only baselines
+
+### Starter KITTI tracking benchmark (v1)
+
+This is a **diagnostic** path only: GT labels are in **camera** coordinates while MOSAIC tracks use the replay fusion frame—see `docs/roadmap.md` before quoting numbers in a report.
+
+1. With the stack sourced, terminal A:
+
+```bash
+ros2 launch mosaic_bringup mosaic_pipeline.launch.py dataset_root:=/workspace/data/kitti sequence:=0
+```
+
+2. Terminal B (records fused tracks keyed by `/mosaic/replay/frame_index`):
+
+```bash
+ros2 run dataset_replay_py dump_tracks_eval_node --ros-args -p output_path:=/workspace/outputs/tracks_dump.json
+```
+
+Let it run through part or all of the sequence, then **Ctrl+C** (the node writes JSON on exit).
+
+3. Offline metrics:
+
+```bash
+python3 scripts/evaluate_kitti_tracks.py \
+  --kitti-root /workspace/data/kitti \
+  --sequence 0 \
+  --predictions /workspace/outputs/tracks_dump.json \
+  --output /workspace/outputs/kitti_track_metrics.json
+```
 
 ## Notes
 

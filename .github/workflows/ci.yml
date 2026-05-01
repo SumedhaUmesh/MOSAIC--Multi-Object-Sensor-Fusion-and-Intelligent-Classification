@@ -23,6 +23,11 @@ jobs:
           source /opt/ros/humble/setup.bash
           cd ros2_ws
           colcon build --merge-install --event-handlers console_direct+
+      - name: Validate mosaic_pipeline launch
+        run: |
+          source /opt/ros/humble/setup.bash
+          source ros2_ws/install/setup.bash
+          ros2 launch mosaic_bringup mosaic_pipeline.launch.py --show-args
       - name: Test
         run: |
           source /opt/ros/humble/setup.bash

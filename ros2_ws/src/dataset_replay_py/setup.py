@@ -19,6 +19,7 @@ setup(
     entry_points={
         "console_scripts": [
             "kitti_replay_node = dataset_replay_py.kitti_replay_node:main",
+            "dump_tracks_eval_node = dataset_replay_py.dump_tracks_eval_node:main",
         ],
     },
 )

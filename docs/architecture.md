@@ -7,8 +7,11 @@
 3. Fusion tracker performs Mahalanobis gating, minimum-cost (Hungarian) assignment with explicit unmatched track/detection slots, EKF updates, then publishes `TrackArray`.
 4. ADAS node consumes tracks and lane state JSON, then emits warnings.
 
+See `docs/roadmap.md` for demo vs research vs product scope.
+
 ## Topic Interfaces
 
+- `/mosaic/replay/frame_index` (`std_msgs/UInt32`, 0-based frame index aligned with KITTI files for this sequence)
 - `/mosaic/camera/image_raw` (`sensor_msgs/Image`)
 - `/mosaic/lanes/state` (`std_msgs/String`, JSON lane metrics + departure flag)
 - `/mosaic/lidar/points` (`sensor_msgs/PointCloud2`)
