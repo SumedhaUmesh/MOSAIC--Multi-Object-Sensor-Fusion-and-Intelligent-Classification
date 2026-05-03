@@ -3,6 +3,8 @@
 End-to-end ROS2 ADAS scaffold that combines camera perception, LiDAR perception,
 multi-object tracking, and ADAS warning logic.
 
+**Fast path (from repo root):** `docker compose -f docker/compose.yaml up --build -d` then `docker compose -f docker/compose.yaml exec mosaic-dev bash` — same as `cd docker` + `docker compose …` below.
+
 ## Stack
 
 - ROS2 Humble (Dockerized Ubuntu 22.04 workflow)
@@ -31,6 +33,15 @@ multi-object tracking, and ADAS warning logic.
 - `scripts/health_check.sh`: topic liveness probe for orchestration (run while pipeline is up)
 
 ## Quick Start (Docker)
+
+From the **repository root** (or use `cd docker` and drop the `-f` flag):
+
+```bash
+docker compose -f docker/compose.yaml up --build -d
+docker compose -f docker/compose.yaml exec mosaic-dev bash
+```
+
+Equivalent:
 
 ```bash
 cd docker
