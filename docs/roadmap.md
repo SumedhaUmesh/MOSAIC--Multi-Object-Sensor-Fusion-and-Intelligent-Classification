@@ -1,6 +1,6 @@
 # MOSAIC roadmap: demo vs research vs product
 
-For deployable defaults, health probes, and honest scope vs automotive certification, see **`production.md`**. Recent edits are sketched in **`CHANGELOG.md`** at the repo root.
+For deployable defaults, health probes, and honest scope vs automotive certification, see **`production.md`**.
 
 The repository is **complete as an integrated ROS 2 scaffold and demo**: Dockerized Humble stack, KITTI replay, camera and LiDAR perception, fusion with Hungarian assignment and EKF-style updates, ADAS warnings, lane JSON, Foxglove, bags, and CI.
 

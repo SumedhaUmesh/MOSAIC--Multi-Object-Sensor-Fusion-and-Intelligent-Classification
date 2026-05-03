@@ -16,7 +16,6 @@ outputs/
 *.egg-info/
 
 .git/
-.cursor/
 
 .DS_Store
 *.swp
